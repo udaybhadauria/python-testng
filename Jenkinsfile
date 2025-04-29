@@ -36,11 +36,17 @@ pipeline {
                 '''
             }
         }
-
-        stage('Archive Reports') {
+	
+	stage('Publish Report') {
             steps {
-                archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: false
-                archiveArtifacts artifacts: 'htmlcov/**', allowEmptyArchive: false
+                publishHTML([
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'reports',
+                    reportFiles: 'report.html',
+                    reportName: 'Test Report'
+                ])
             }
         }
 
