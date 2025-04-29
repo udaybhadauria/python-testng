@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USERNAME = credentials('docker-username')
-        DOCKER_PASSWORD = credentials('docker-password')
-        SLACK_WEBHOOK_URL = credentials('slack-webhook-python-testng')
-        GITHUB_PAT = credentials('github-pat')
+        DOCKER_USERNAME = credentials('docker-username')  
+        DOCKER_PASSWORD = credentials('docker-password')  
+        SLACK_WEBHOOK_URL = credentials('slack-webhook-python-testng')  
+        GITHUB_PAT = credentials('github-pat')            
     }
 
     stages {
@@ -65,26 +65,18 @@ pipeline {
                 sh '''
                     git config --global user.email "bhadauria.uday@gmail.com"
                     git config --global user.name "udaybhadauria"
-
-                    git reset --hard
-                    git clean -fd
-
-                    if git show-ref --verify --quiet refs/heads/gh-pages; then
+                    git fetch origin
+                    if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
                         git checkout gh-pages
                     else
                         git checkout -b gh-pages
                     fi
 
-                    git rm -rf .
-                    echo "# Test Report" > index.html
-                    git add index.html
-                    git commit -m "Update test report"
-
+                    rm -rf *
+                    cp -r reports/* .
+                    git add .
+                    git commit -m "📊 Update GitHub Pages with test reports [Build #$BUILD_NUMBER]" || echo "No changes to commit"
                     git push https://$GITHUB_PAT@github.com/udaybhadauria/python-testng.git gh-pages --force
-
-                    git --work-tree=reports add --all
-                    git --work-tree=reports commit -m "Deploy HTML Reports"
-                    git push https://$GITHUB_PAT@github.com/udaybhadauria/python-testng.git HEAD:gh-pages --force
                     git checkout main
                 '''
             }
@@ -97,12 +89,12 @@ pipeline {
             steps {
                 sh '''
                     BADGE_URL="https://img.shields.io/badge/Build-Passed-brightgreen"
-                    sed -i "s|\\!\\[Build Status\\](.*)|![Build Status]($BADGE_URL)|" README.md
+                    sed -i "s|!\\[Build Status\\](.*)|![Build Status]($BADGE_URL)|" README.md || true
 
                     git config --global user.name "udaybhadauria"
                     git config --global user.email "bhadauria.uday@gmail.com"
                     git add README.md
-                    git commit -m "🔄 Auto-update Build Badge after build #$BUILD_NUMBER"
+                    git commit -m "🔄 Auto-update Build Badge after build #$BUILD_NUMBER" || echo "No changes to commit"
                     git push https://$GITHUB_PAT@github.com/udaybhadauria/python-testng.git main
                 '''
             }
@@ -129,9 +121,7 @@ pipeline {
         }
 
         always {
-            script {
-                echo "Pipeline finished."
-            }
+            echo "Pipeline completed for Job ${env.JOB_NAME} Build #${env.BUILD_NUMBER}"
         }
     }
 }
