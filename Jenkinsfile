@@ -18,10 +18,14 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
+		    rm -rf venv  # start fresh
                     python3 -m venv venv
-		    ./venv/bin/python -m ensurepip --upgrade
-		    ./venv/bin/python -m pip install --upgrade pip setuptools wheel
-		    ./venv/bin/python -m pip install -r requirements.txt
+
+		    cp $(which pip3) venv/bin/pip
+		    cp $(which pip3) venv/bin/pip3
+
+		    ./venv/bin/pip install --upgrade pip setuptools wheel
+		    ./venv/bin/pip install -r requirements.txt
                 '''
             }
         }
