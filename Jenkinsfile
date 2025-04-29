@@ -69,13 +69,18 @@ pipeline {
                     git reset --hard
                     git clean -fd
 
-                    git fetch origin gh-pages || git checkout --orphan gh-pages
-                    git checkout gh-pages || git checkout --orphan gh-pages
+                    # Check if gh-pages branch exists
+                    if git show-ref --verify --quiet refs/heads/gh-pages; then
+                        git checkout gh-pages
+                    else
+                        git checkout -b gh-pages
+                    fi
+
                     git rm -rf .
                     echo "# Test Report" > index.html
                     git add index.html
                     git commit -m "Update test report"
-                    git push origin gh-pages
+                    git push origin gh-pages --force
 
                     git --work-tree=reports add --all
                     git --work-tree=reports commit -m "Deploy HTML Reports"
@@ -122,6 +127,13 @@ pipeline {
                 }"""
 
                 sh "curl -X POST -H 'Content-type: application/json' --data '${summary}' ${SLACK_WEBHOOK_URL}"
+            }
+        }
+
+        always {
+            script {
+                // Optional: You can add any cleanup or final notification logic here
+                echo "Pipeline finished."
             }
         }
     }
