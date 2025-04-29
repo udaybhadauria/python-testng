@@ -63,8 +63,8 @@ pipeline {
             }
             steps {
                 sh '''
-                    git config --global user.email "you@example.com"
-                    git config --global user.name "Your Name"
+                    git config --global user.email "bhadauria.uday@gmail.com"
+                    git config --global user.name "udaybhadauria"
                     git checkout --orphan gh-pages
                     git --work-tree=reports add --all
                     git --work-tree=reports commit -m "Deploy HTML Reports"
