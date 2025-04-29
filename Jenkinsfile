@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/udaybhadauria/python-testng.git'  // Replace with your repo
+		git branch: 'main', url: 'https://github.com/udaybhadauria/python-testng.git'
             }
         }
 
