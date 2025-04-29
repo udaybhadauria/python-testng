@@ -19,6 +19,7 @@ pipeline {
             steps {
                 sh '''
                     python3 -m venv venv
+		    chmod +x ./venv/bin/pip
                     . venv/bin/activate
                     ./venv/bin/pip install -r requirements.txt
                 '''
