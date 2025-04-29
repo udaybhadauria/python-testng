@@ -20,8 +20,8 @@ pipeline {
                 sh '''
                     python3 -m venv venv
 		    chmod +x ./venv/bin/pip
-                    . venv/bin/activate
-                    ./venv/bin/pip install -r requirements.txt
+                    ./venv/bin/python -m pip install --upgrade pip
+                    ./venv/bin/python -m pip install -r requirements.txt
                 '''
             }
         }
