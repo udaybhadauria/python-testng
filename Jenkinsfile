@@ -65,13 +65,13 @@ pipeline {
                 sh '''
                     git config --global user.email "bhadauria.uday@gmail.com"
                     git config --global user.name "udaybhadauria"
-
-		    if git show-ref --quiet refs/heads/gh-pages; then
-		       git checkout gh-pages
-		    else
-		       git checkout --orphan gh-pages
-		    fi
-
+		    
+		    git reset --hard
+		    git clean -fd
+		    
+		    git fetch origin gh-pages
+		    git checkout gh-pages
+		    
                     git --work-tree=reports add --all
                     git --work-tree=reports commit -m "Deploy HTML Reports"
                     git push origin HEAD:gh-pages --force
@@ -95,8 +95,8 @@ pipeline {
             	    sed -i "s|\\!\\[Build Status\\](.*)|![Build Status]($BADGE_URL)|" README.md
 
             	    # Git commit and push
-            	    git config --global user.name "jenkins-bot"
-            	    git config --global user.email "jenkins-bot@example.com"
+            	    git config --global user.name "udaybhadauria"
+            	    git config --global user.email "bhadauria.uday@gmail.com"
             	    git add README.md
             	    git commit -m "🔄 Auto-update Build Badge after build #$BUILD_NUMBER"
             	    git push origin main
