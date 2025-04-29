@@ -19,8 +19,9 @@ pipeline {
             steps {
                 sh '''
                     python3 -m venv venv
-		    chmod +x ./venv/bin/pip
-                    ./venv/bin/python -m pip install -r requirements.txt
+		    ./venv/bin/python -m ensurepip --upgrade
+		    ./venv/bin/python -m pip install --upgrade pip setuptools wheel
+		    ./venv/bin/python -m pip install -r requirements.txt
                 '''
             }
         }
