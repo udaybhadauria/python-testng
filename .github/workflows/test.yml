@@ -1,41 +1,38 @@
+# .github/workflows/test.yml
 name: Run Tests
 
 on:
   push:
-    branches:
-      - main            # Trigger the workflow on push to the main branch
+    branches: [main]
   pull_request:
-    branches:
-      - main            # Trigger on pull requests targeting the main branch
+    branches: [main]
 
 jobs:
   test:
-    runs-on: ubuntu-latest   # Use the latest Ubuntu environment
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2    # Checkout the repository code
+        uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v2  # Set up Python for the runner
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.11  # Use Python 3.11
+          python-version: 3.11
 
       - name: Install dependencies
         run: |
-          python -m venv venv        # Create a virtual environment
-          source venv/bin/activate   # Activate the virtual environment
-          pip install --upgrade pip  # Upgrade pip to the latest version
-          pip install -r requirements.txt  # Install dependencies
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-html
 
-      - name: Run tests
+      - name: Run tests and generate HTML report
         run: |
-          source venv/bin/activate   # Re-activate the virtual environment
-          pytest --maxfail=1 --disable-warnings -q  # Run the tests
+          mkdir -p reports
+          pytest --html=reports/index.html
 
-      - name: Upload Test Results as Artifacts
-        if: always()  # Always upload the results regardless of success or failure
-        uses: actions/upload-artifact@v2
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
         with:
-          name: test-results  # The name of the artifact
-          path: reports/test-report.html  # Path to the generated test report
+          name: pytest-html-report
+          path: reports/

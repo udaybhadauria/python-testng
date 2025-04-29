@@ -1,42 +1,26 @@
+# .github/workflows/github-pages.yml
 name: 🚀 Deploy Test Report to GitHub Pages
 
-name: Deploy Test Reports to GitHub Pages
-
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Download Report Artifact
+        uses: actions/download-artifact@v4
         with:
-          python-version: '3.8'
+          name: pytest-html-report
+          path: reports/
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Run tests
-        run: |
-          pytest --maxfail=1 --disable-warnings -q
-
-      - name: Upload HTML Report to GitHub Pages
-        if: success()
-        run: |
-          git config --global user.email "bhadauria.uday@gmail.com"
-          git config --global user.name "udaybhadauria"
-          git clone --branch gh-pages https://github.com/your-username/your-repo.git gh-pages
-          cp reports/report.html gh-pages/index.html  # Change to index.html for GitHub Pages
-          cd gh-pages
-          git add .
-          git commit -m "Update report.html"
-          git push origin gh-pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports/
