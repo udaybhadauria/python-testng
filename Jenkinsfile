@@ -2,27 +2,27 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USERNAME = credentials('docker-username')  // Jenkins credentials for docket user name
-        DOCKER_PASSWORD = credentials('docker-password')  // Jenkins credentials for docker password
-        SLACK_WEBHOOK_URL = credentials('slack-webhook-python-testng')  // Jenkins credentials for Slack
-	GITHUB_PAT = credentials('github-pat')            // Jenkins credentials GitHub PAT
+        DOCKER_USERNAME = credentials('docker-username')  
+        DOCKER_PASSWORD = credentials('docker-password')  
+        SLACK_WEBHOOK_URL = credentials('slack-webhook-python-testng')  
+        GITHUB_PAT = credentials('github-pat')            
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-		git branch: 'main', url: 'https://github.com/udaybhadauria/python-testng.git'
+                git branch: 'main', url: 'https://github.com/udaybhadauria/python-testng.git'  // Verify this URL
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-		    rm -rf venv  # start fresh
+                    rm -rf venv  
                     python3 -m venv venv
-		    ./venv/bin/python -m ensurepip --upgrade
-		    ./venv/bin/python -m pip install --upgrade pip setuptools wheel
-		    ./venv/bin/pip install -r requirements.txt
+                    ./venv/bin/python -m ensurepip --upgrade
+                    ./venv/bin/python -m pip install --upgrade pip setuptools wheel
+                    ./venv/bin/pip install -r requirements.txt
                 '''
             }
         }
@@ -46,7 +46,7 @@ pipeline {
 
         stage('Docker Build and Push') {
             when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }  // Only if tests passed
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
             }
             steps {
                 sh '''
@@ -59,24 +59,24 @@ pipeline {
 
         stage('Deploy GitHub Pages (Reports)') {
             when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }  // Only if tests passed
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
             }
             steps {
                 sh '''
                     git config --global user.email "bhadauria.uday@gmail.com"
                     git config --global user.name "udaybhadauria"
-		    
-		    git reset --hard
-		    git clean -fd
-		    
-		    git fetch origin gh-pages || git checkout --orphan gh-pages
-		    git checkout gh-pages
-		    git rm -rf .
-		    echo "# Test Report" > index.html
-		    git add index.html
-		    git commit -m "Update test report"
-		    git push origin gh-pages
-		    
+
+                    git reset --hard
+                    git clean -fd
+
+                    git fetch origin gh-pages || git checkout --orphan gh-pages
+                    git checkout gh-pages || git checkout --orphan gh-pages
+                    git rm -rf .
+                    echo "# Test Report" > index.html
+                    git add index.html
+                    git commit -m "Update test report"
+                    git push origin gh-pages
+
                     git --work-tree=reports add --all
                     git --work-tree=reports commit -m "Deploy HTML Reports"
                     git push origin HEAD:gh-pages --force
@@ -85,49 +85,43 @@ pipeline {
             }
         }
 
-	stage('Update README.md Badge') {
-	    when {
-        	expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-    	    }
-    	    steps {
-        	sh '''
-            	    # Update badge in README.md dynamically
+        stage('Update README.md Badge') {
+            when {
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+            }
+            steps {
+                sh '''
+                    BADGE_URL="https://img.shields.io/badge/Build-Passed-brightgreen"
+                    sed -i "s|\\!\\[Build Status\\](.*)|![Build Status]($BADGE_URL)|" README.md
 
-            	    # Set BADGE_URL based on build result
-            	    BADGE_URL="https://img.shields.io/badge/Build-Passed-brightgreen"
-
-            	    # Update the badge link inside README.md
-            	    sed -i "s|\\!\\[Build Status\\](.*)|![Build Status]($BADGE_URL)|" README.md
-
-            	    # Git commit and push
-            	    git config --global user.name "udaybhadauria"
-            	    git config --global user.email "bhadauria.uday@gmail.com"
-            	    git add README.md
-            	    git commit -m "🔄 Auto-update Build Badge after build #$BUILD_NUMBER"
-            	    git push origin main
-        	'''
-    	    }
-	}
+                    git config --global user.name "udaybhadauria"
+                    git config --global user.email "bhadauria.uday@gmail.com"
+                    git add README.md
+                    git commit -m "🔄 Auto-update Build Badge after build #$BUILD_NUMBER"
+                    git push origin main
+                '''
+            }
+        }
     }
 
     post {
         success {
             script {
                 def summary = """{
-"text": "✅ *Build SUCCESS*: Job ${env.JOB_NAME} #${env.BUILD_NUMBER} - <${env.BUILD_URL}|View Build>"
-}"""
+                    "text": "✅ *Build SUCCESS*: Job ${env.JOB_NAME} #${env.BUILD_NUMBER} - <${env.BUILD_URL}|View Build>"
+                }"""
 
-                sh "curl -X POST -H \"Content-type: application/json\" --data '${summary}' \$SLACK_WEBHOOK_URL"
+                sh "curl -X POST -H 'Content-type: application/json' --data '${summary}' ${SLACK_WEBHOOK_URL}"
             }
         }
 
         failure {
             script {
                 def summary = """{
-"text": "❌ *Build FAILED*: Job ${env.JOB_NAME} #${env.BUILD_NUMBER} - <${env.BUILD_URL}|View Build>"
-}"""
+                    "text": "❌ *Build FAILED*: Job ${env.JOB_NAME} #${env.BUILD_NUMBER} - <${env.BUILD_URL}|View Build>"
+                }"""
 
-                sh "curl -X POST -H \"Content-type: application/json\" --data '${summary}' \$SLACK_WEBHOOK_URL"
+                sh "curl -X POST -H 'Content-type: application/json' --data '${summary}' ${SLACK_WEBHOOK_URL}"
             }
         }
     }
