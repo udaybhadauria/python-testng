@@ -24,7 +24,6 @@ pipeline {
 		    cp $(which pip3) venv/bin/pip
 		    cp $(which pip3) venv/bin/pip3
 
-		    ./venv/bin/pip install --upgrade pip setuptools wheel
 		    ./venv/bin/pip install -r requirements.txt
                 '''
             }
