@@ -65,7 +65,13 @@ pipeline {
                 sh '''
                     git config --global user.email "bhadauria.uday@gmail.com"
                     git config --global user.name "udaybhadauria"
-                    git checkout --orphan gh-pages
+
+		    if git show-ref --quiet refs/heads/gh-pages; then
+		       git checkout gh-pages
+		    else
+		       git checkout --orphan gh-pages
+		    fi
+
                     git --work-tree=reports add --all
                     git --work-tree=reports commit -m "Deploy HTML Reports"
                     git push origin HEAD:gh-pages --force
