@@ -2,23 +2,23 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USERNAME = credentials('docker-username')  
-        DOCKER_PASSWORD = credentials('docker-password')  
-        SLACK_WEBHOOK_URL = credentials('slack-webhook-python-testng')  
-        GITHUB_PAT = credentials('github-pat')            
+        DOCKER_USERNAME = credentials('docker-username')
+        DOCKER_PASSWORD = credentials('docker-password')
+        SLACK_WEBHOOK_URL = credentials('slack-webhook-python-testng')
+        GITHUB_PAT = credentials('github-pat')
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/udaybhadauria/python-testng.git'  // Verify this URL
+                git branch: 'main', url: 'https://github.com/udaybhadauria/python-testng.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    rm -rf venv  
+                    rm -rf venv
                     python3 -m venv venv
                     ./venv/bin/python -m ensurepip --upgrade
                     ./venv/bin/python -m pip install --upgrade pip setuptools wheel
@@ -69,7 +69,6 @@ pipeline {
                     git reset --hard
                     git clean -fd
 
-                    # Check if gh-pages branch exists
                     if git show-ref --verify --quiet refs/heads/gh-pages; then
                         git checkout gh-pages
                     else
@@ -80,8 +79,7 @@ pipeline {
                     echo "# Test Report" > index.html
                     git add index.html
                     git commit -m "Update test report"
-                    
-                    # Push using the Personal Access Token
+
                     git push https://$GITHUB_PAT@github.com/udaybhadauria/python-testng.git gh-pages --force
 
                     git --work-tree=reports add --all
@@ -117,7 +115,6 @@ pipeline {
                 def summary = """{
                     "text": "✅ *Build SUCCESS*: Job ${env.JOB_NAME} #${env.BUILD_NUMBER} - <${env.BUILD_URL}|View Build>"
                 }"""
-
                 sh "curl -X POST -H 'Content-type: application/json' --data '${summary}' ${SLACK_WEBHOOK_URL}"
             }
         }
@@ -127,15 +124,14 @@ pipeline {
                 def summary = """{
                     "text": "❌ *Build FAILED*: Job ${env.JOB_NAME} #${env.BUILD_NUMBER} - <${env.BUILD_URL}|View Build>"
                 }"""
-
                 sh "curl -X POST -H 'Content-type: application/json' --data '${summary}' ${SLACK_WEBHOOK_URL}"
             }
         }
 
         always {
             script {
-                // Optional: You can add any cleanup or final notification logic here
                 echo "Pipeline finished."
             }
+        }
     }
 }
