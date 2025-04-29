@@ -69,20 +69,13 @@ pipeline {
 		    git reset --hard
 		    git clean -fd
 		    
-		    # Check if remote gh-pages exists
-		    if git ls-remote --exit-code origin gh-pages; then
-    			echo "Branch exists, checking out..."
-    			git fetch origin gh-pages
-    			git checkout gh-pages
-		    else
-    			echo "Creating gh-pages branch"
-    			git checkout --orphan gh-pages
-    			git rm -rf .
-    			echo "# Test Report" > index.html
-    			git add index.html
-    			git commit -m "Init gh-pages"
-    			git push origin gh-pages
-		    fi
+		    git fetch origin gh-pages || git checkout --orphan gh-pages
+		    git checkout gh-pages
+		    git rm -rf .
+		    echo "# Test Report" > index.html
+		    git add index.html
+		    git commit -m "Update test report"
+		    git push origin gh-pages
 		    
                     git --work-tree=reports add --all
                     git --work-tree=reports commit -m "Deploy HTML Reports"
