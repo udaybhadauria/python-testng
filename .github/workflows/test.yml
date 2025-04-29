@@ -1,41 +1,41 @@
-name: Python TestNG Style Tests
+name: Run Tests
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main            # Trigger the workflow on push to the main branch
   pull_request:
-    branches: [ main ]
-  workflow_dispatch: # Manual trigger support
+    branches:
+      - main            # Trigger on pull requests targeting the main branch
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # Use the latest Ubuntu environment
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2    # Checkout the repository code
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v2  # Set up Python for the runner
+        with:
+          python-version: 3.11  # Use Python 3.11
 
-    - name: Install dependencies
-      run: |
-        pip install --upgrade pip
-        make install
+      - name: Install dependencies
+        run: |
+          python -m venv venv        # Create a virtual environment
+          source venv/bin/activate   # Activate the virtual environment
+          pip install --upgrade pip  # Upgrade pip to the latest version
+          pip install -r requirements.txt  # Install dependencies
 
-    - name: Run Tests
-      run: |
-        make test
+      - name: Run tests
+        run: |
+          source venv/bin/activate   # Re-activate the virtual environment
+          pytest --maxfail=1 --disable-warnings -q  # Run the tests
 
-    - name: Generate HTML Report
-      run: |
-        mkdir -p reports
-        make report
-
-    - name: Archive Test Report (Artifacts)
-      uses: actions/upload-artifact@v4
-      with:
-        name: pytest-html-report
-        path: reports/report.html
+      - name: Upload Test Results as Artifacts
+        if: always()  # Always upload the results regardless of success or failure
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results  # The name of the artifact
+          path: reports/test-report.html  # Path to the generated test report

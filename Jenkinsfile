@@ -57,31 +57,6 @@ pipeline {
             }
         }
 
-        stage('Deploy GitHub Pages (Reports)') {
-            when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
-            steps {
-                sh '''
-                    git config --global user.email "bhadauria.uday@gmail.com"
-                    git config --global user.name "udaybhadauria"
-                    git fetch origin
-                    if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
-                        git checkout gh-pages
-                    else
-                        git checkout -b gh-pages
-                    fi
-
-                    rm -rf *
-                    cp -r reports/* .
-                    git add .
-                    git commit -m "📊 Update GitHub Pages with test reports [Build #$BUILD_NUMBER]" || echo "No changes to commit"
-                    git push https://$GITHUB_PAT@github.com/udaybhadauria/python-testng.git gh-pages --force
-                    git checkout main
-                '''
-            }
-        }
-
         stage('Update README.md Badge') {
             when {
                 expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
