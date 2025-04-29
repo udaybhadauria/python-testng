@@ -80,11 +80,13 @@ pipeline {
                     echo "# Test Report" > index.html
                     git add index.html
                     git commit -m "Update test report"
-                    git push origin gh-pages --force
+                    
+                    # Push using the Personal Access Token
+                    git push https://$GITHUB_PAT@github.com/udaybhadauria/python-testng.git gh-pages --force
 
                     git --work-tree=reports add --all
                     git --work-tree=reports commit -m "Deploy HTML Reports"
-                    git push origin HEAD:gh-pages --force
+                    git push https://$GITHUB_PAT@github.com/udaybhadauria/python-testng.git HEAD:gh-pages --force
                     git checkout main
                 '''
             }
@@ -103,7 +105,7 @@ pipeline {
                     git config --global user.email "bhadauria.uday@gmail.com"
                     git add README.md
                     git commit -m "🔄 Auto-update Build Badge after build #$BUILD_NUMBER"
-                    git push origin main
+                    git push https://$GITHUB_PAT@github.com/udaybhadauria/python-testng.git main
                 '''
             }
         }
@@ -135,6 +137,5 @@ pipeline {
                 // Optional: You can add any cleanup or final notification logic here
                 echo "Pipeline finished."
             }
-        }
     }
 }
