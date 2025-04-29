@@ -20,10 +20,8 @@ pipeline {
                 sh '''
 		    rm -rf venv  # start fresh
                     python3 -m venv venv
-
-		    cp $(which pip3) venv/bin/pip
-		    cp $(which pip3) venv/bin/pip3
-
+		    ./venv/bin/python -m ensurepip --upgrade
+		    ./venv/bin/python -m pip install --upgrade pip setuptools wheel
 		    ./venv/bin/pip install -r requirements.txt
                 '''
             }
