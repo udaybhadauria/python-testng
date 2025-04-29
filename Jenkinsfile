@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USERNAME = credentials('docker-username')  // Jenkins credentials
-        DOCKER_PASSWORD = credentials('docker-password')  // Jenkins credentials
-        SLACK_WEBHOOK_URL = credentials('slack-webhook')  // Jenkins credentials
-	GITHUB_PAT = credentials('github-pat')            // GitHub Personal Access Token
+        DOCKER_USERNAME = credentials('docker-username')  // Jenkins credentials for docket user name
+        DOCKER_PASSWORD = credentials('docker-password')  // Jenkins credentials for docker password
+        SLACK_WEBHOOK_URL = credentials('slack-webhook-python-testng')  // Jenkins credentials for Slack
+	GITHUB_PAT = credentials('github-pat')            // Jenkins credentials GitHub PAT
     }
 
     stages {
@@ -18,6 +18,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
+		    #!/bin/bash
                     python3 -m venv venv
                     source venv/bin/activate
                     pip install --upgrade pip
@@ -29,6 +30,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
+		    #!/bin/bash
                     source venv/bin/activate
                     make test
                     make report
