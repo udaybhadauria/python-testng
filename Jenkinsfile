@@ -18,9 +18,8 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-		    #!/bin/bash
                     python3 -m venv venv
-                    source venv/bin/activate
+                    . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
@@ -30,8 +29,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-		    #!/bin/bash
-                    source venv/bin/activate
+                    . venv/bin/activate
                     make test
                     make report
                 '''
@@ -102,10 +100,23 @@ pipeline {
 
     post {
         success {
-            slackSend color: '#00FF00', message: "✅ BUILD SUCCESS: ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
+            script {
+                def summary = """{
+"text": "✅ *Build SUCCESS*: Job ${env.JOB_NAME} #${env.BUILD_NUMBER} - <${env.BUILD_URL}|View Build>"
+}"""
+
+                sh "curl -X POST -H \"Content-type: application/json\" --data '${summary}' \$SLACK_WEBHOOK_URL"
+            }
         }
+
         failure {
-            slackSend color: '#FF0000', message: "❌ BUILD FAILED: ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
+            script {
+                def summary = """{
+"text": "❌ *Build FAILED*: Job ${env.JOB_NAME} #${env.BUILD_NUMBER} - <${env.BUILD_URL}|View Build>"
+}"""
+
+                sh "curl -X POST -H \"Content-type: application/json\" --data '${summary}' \$SLACK_WEBHOOK_URL"
+            }
         }
     }
 }
